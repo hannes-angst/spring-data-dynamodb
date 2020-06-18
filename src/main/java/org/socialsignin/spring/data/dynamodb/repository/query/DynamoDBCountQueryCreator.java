@@ -30,7 +30,7 @@ import java.util.Optional;
 
 public class DynamoDBCountQueryCreator<T, ID> extends AbstractDynamoDBQueryCreator<T, ID, Long> {
 
-	private boolean pageQuery;
+	private final boolean pageQuery;
 
 	/**
 	 *
@@ -52,7 +52,6 @@ public class DynamoDBCountQueryCreator<T, ID> extends AbstractDynamoDBQueryCreat
 		super(tree, parameterAccessor, entityMetadata, Optional.empty(), Optional.empty(),
 				QueryConstants.ConsistentReadMode.DEFAULT,  filterExpression, names, values, dynamoDBOperations);
 		this.pageQuery = pageQuery;
-
 	}
 
 	@Override

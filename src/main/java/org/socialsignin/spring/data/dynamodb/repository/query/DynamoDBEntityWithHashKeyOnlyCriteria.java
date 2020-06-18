@@ -96,39 +96,42 @@ public class DynamoDBEntityWithHashKeyOnlyCriteria<T, ID> extends AbstractDynamo
 	}
 
 	public DynamoDBScanExpression buildScanExpression() {
+        ensureNoSort(sort);
 
-		ensureNoSort(sort);
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+        if (isHashKeySpecified()) {
+            scanExpression.addFilterCondition(getHashKeyAttributeName(),
+                    createSingleValueCondition(getHashKeyPropertyName(), ComparisonOperator.EQ,
+                            getHashKeyAttributeValue(), getHashKeyAttributeValue().getClass(), true));
 
-		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
-		if (isHashKeySpecified()) {
-			scanExpression.addFilterCondition(getHashKeyAttributeName(),
-					createSingleValueCondition(getHashKeyPropertyName(), ComparisonOperator.EQ,
-							getHashKeyAttributeValue(), getHashKeyAttributeValue().getClass(), true));
-		}
+            for (Map.Entry<String, List<Condition>> conditionEntry : attributeConditions.entrySet()) {
+                for (Condition condition : conditionEntry.getValue()) {
+                    scanExpression.addFilterCondition(conditionEntry.getKey(), condition);
+                }
+            }
+        } else if (filterExpression.isPresent()) {
+            prepareExpressions(scanExpression);
+        }
 
-		for (Map.Entry<String, List<Condition>> conditionEntry : attributeConditions.entrySet()) {
-			for (Condition condition : conditionEntry.getValue()) {
-				scanExpression.addFilterCondition(conditionEntry.getKey(), condition);
-			}
-		}
+        if (projection.isPresent()) {
+            scanExpression.setSelect(Select.SPECIFIC_ATTRIBUTES);
+            scanExpression.setProjectionExpression(projection.get());
+        }
+        limit.ifPresent(scanExpression::setLimit);
 
-		if (projection.isPresent()) {
-			scanExpression.setSelect(Select.SPECIFIC_ATTRIBUTES);
-			scanExpression.setProjectionExpression(projection.get());
-		}
-		limit.ifPresent(scanExpression::setLimit);
-		return scanExpression;
-	}
+        return scanExpression;
+    }
 
-	@Override
-	public DynamoDBQueryCriteria<T, ID> withPropertyEquals(String propertyName, Object value, Class<?> propertyType) {
-		if (isHashKeyProperty(propertyName)) {
-			return withHashKeyEquals(value);
-		} else {
-			Condition condition = createSingleValueCondition(propertyName, ComparisonOperator.EQ, value, propertyType,
-					false);
-			return withCondition(propertyName, condition);
-		}
-	}
+
+    @Override
+    public DynamoDBQueryCriteria<T, ID> withPropertyEquals(String propertyName, Object value, Class<?> propertyType) {
+        if (isHashKeyProperty(propertyName)) {
+            return withHashKeyEquals(value);
+        } else {
+            Condition condition = createSingleValueCondition(propertyName, ComparisonOperator.EQ, value, propertyType,
+                    false);
+            return withCondition(propertyName, condition);
+        }
+    }
 
 }

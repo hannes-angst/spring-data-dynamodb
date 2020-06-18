@@ -51,6 +51,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.socialsignin.spring.data.dynamodb.repository.util.CollectionUtils.listOf;
+import static org.socialsignin.spring.data.dynamodb.repository.util.CollectionUtils.setOf;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {DynamoDBLocalResource.class, CRUDOperationsIT.TestAppConfig.class})
@@ -176,18 +178,20 @@ public class CRUDOperationsIT {
 		userRepository.save(u2);
 		userRepository.save(u3);
 
-		List<User> actualList = new ArrayList<>();
-		userRepository.findAll().forEach(actualList::add);
+        List<User> actualList = new ArrayList<>(userRepository.findAll());
 		assertEquals("Unexpected List: " + actualList, 3, actualList.size());
 		actualList.clear();
 
-		userRepository.findByNameIn(Arrays.asList(name1, name2)).forEach(actualList::add);
+        actualList.addAll(userRepository.findByNameIn(Arrays.asList(name1, name2)));
 		assertEquals("Unexpected List: " + actualList, 2, actualList.size());
 		actualList.clear();
 
-		// Delete specific
+
+        assertEquals(name1, userRepository.findById(u1.getId()).get().getName());
+
+        // Delete specific
 		userRepository.deleteById("u2");
-		userRepository.findAll().forEach(actualList::add);
+        actualList.addAll(userRepository.findAll());
 		assertEquals("u1", actualList.get(0).getId());
 		assertEquals("u3", actualList.get(1).getId());
 
@@ -257,9 +261,9 @@ public class CRUDOperationsIT {
 		Page<User> thirdResults = userPaginationRepository.findAllByName("test", thirdPage);
 		assertEquals(2, thirdResults.getNumberOfElements());
 
-		Pageable wholePage = Pageable.unpaged();
-		Page<User> wholeResults = userPaginationRepository.findAllByName("test", wholePage);
-		assertEquals(22, wholeResults.getNumberOfElements());
+        Pageable wholePage = Pageable.unpaged();
+        Page<User> wholeResults = userPaginationRepository.findAllByName("test", wholePage);
+        assertEquals(22, wholeResults.getNumberOfElements());
 	}
 
 	@Test
@@ -323,6 +327,8 @@ public class CRUDOperationsIT {
         Set<User> notTagB = setOf(u3);
         Set<User> notTagC = setOf(u2);
 
+
+        assertEquals(setOf(u1), new HashSet<>(userRepository.findAllByTagsContaining(setOf("tag-b", "tag-a", "tag-c"))));
 
         // Single value
         assertEquals(tagA, new HashSet<>(userRepository.findAllByTagsContaining("tag-a")));
@@ -401,26 +407,5 @@ public class CRUDOperationsIT {
         assertEquals(notTagC, new HashSet<>(userRepository.findAllByTagsIsNotContaining(listOf("tag-c"))));
 
 
-    }
-
-
-    @SafeVarargs
-    private final <E> Set<E> setOf(E... values) {
-        Set<E> result = new HashSet<>();
-
-        if (values != null) {
-            result.addAll(Arrays.asList(values));
-        }
-        return result;
-    }
-
-    @SafeVarargs
-    private final <E> List<E> listOf(E... values) {
-        List<E> result = new ArrayList<>();
-
-        if (values != null) {
-            result.addAll(Arrays.asList(values));
-        }
-        return result;
     }
 }

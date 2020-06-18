@@ -15,20 +15,21 @@
  */
 package org.socialsignin.spring.data.dynamodb.domain.sample;
 
-import org.socialsignin.spring.data.dynamodb.marshaller.DateDynamoDBMarshaller;
+import org.socialsignin.spring.data.dynamodb.repository.EnableScan;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.util.List;
 
-public class DynamoDBYearMarshaller extends DateDynamoDBMarshaller {
+@Repository
+public interface TestRepository extends CrudRepository<User, String> {
+   @EnableScan
+    List<User> findAllByNameAndPostCodeInOrTagsContainsAndNumberOfPlaylistsGreaterThan(
+            String name,
+            List<String> postCode,
+            String tags,
+            int playLists);
 
-	private static final String PATTERN = "yyyy";
 
-	@Override
-	public DateFormat getDateFormat() {
-        SimpleDateFormat sdf = new SimpleDateFormat(PATTERN);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf;
-    }
+
 }

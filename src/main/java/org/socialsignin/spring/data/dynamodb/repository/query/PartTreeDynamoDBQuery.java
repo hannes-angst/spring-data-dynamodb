@@ -93,8 +93,8 @@ public class PartTreeDynamoDBQuery<T, ID> extends AbstractDynamoDBQuery<T, ID> i
 
 	@Override
 	protected boolean isSingleEntityResultsRestriction() {
-		Integer resultsRestiction = getResultsRestrictionIfApplicable();
-		return resultsRestiction != null && resultsRestiction.intValue() == 1;
+		Integer resultsRestriction = getResultsRestrictionIfApplicable();
+		return resultsRestriction != null && resultsRestriction.intValue() == 1;
 	}
 
 }

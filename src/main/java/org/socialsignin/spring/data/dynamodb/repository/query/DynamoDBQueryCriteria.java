@@ -18,10 +18,12 @@ package org.socialsignin.spring.data.dynamodb.repository.query;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import org.socialsignin.spring.data.dynamodb.core.DynamoDBOperations;
 import org.socialsignin.spring.data.dynamodb.query.Query;
-import org.socialsignin.spring.data.dynamodb.repository.ExpressionAttribute;
 import org.socialsignin.spring.data.dynamodb.repository.QueryConstants;
+import org.socialsignin.spring.data.dynamodb.repository.support.ExpressionAttributeHolder;
+import org.socialsignin.spring.data.dynamodb.repository.support.MappedExpressionHolder;
 import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,11 +54,11 @@ public interface DynamoDBQueryCriteria<T, ID> {
 
 	DynamoDBQueryCriteria<T, ID> withFilterExpression(Optional<String> filterExpression);
 
-	DynamoDBQueryCriteria<T, ID> withExpressionAttributeNames(ExpressionAttribute[] names);
+	DynamoDBQueryCriteria<T, ID> withExpressionAttributeNames(List<ExpressionAttributeHolder> names);
 
-	DynamoDBQueryCriteria<T, ID> withExpressionAttributeValues(ExpressionAttribute[] values);
+	DynamoDBQueryCriteria<T, ID> withExpressionAttributeValues(List<ExpressionAttributeHolder> values);
 
-	DynamoDBQueryCriteria<T, ID> withMappedExpressionValues(Map<String, String> values);
+	DynamoDBQueryCriteria<T, ID> withMappedExpressionValues(Map<String, MappedExpressionHolder> values);
 
 	Query<T> buildQuery(DynamoDBOperations dynamoDBOperations);
 
